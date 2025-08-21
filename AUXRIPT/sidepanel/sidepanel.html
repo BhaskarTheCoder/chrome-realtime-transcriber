@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Real-Time Audio Transcription</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Live Transcription</h2>
+
+    <div class="controls">
+      <button id="startBtn">Start Recording</button>
+      <button id="stopBtn" disabled>Stop Recording</button>
+    </div>
+
+    <div class="status">
+      <span id="recordingStatus">Status: Stopped</span>
+      <span id="connectionStatus">Connection: Offline</span>
+      <span id="errorStatus"></span>
+      <span id="timer">00:00</span>
+    </div>
+
+    <div class="transcript-container">
+      <div id="transcript"></div>
+    </div>
+
+    <div class="export">
+      <button id="copyBtn">Copy to Clipboard</button>
+      <button id="downloadBtn">Download as Text</button>
+    </div>
+  </div>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>
