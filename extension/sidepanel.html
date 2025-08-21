@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Real-Time Transcriber</title>
+<link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+<div class="container">
+    <h2>Real-Time Transcription</h2>
+    <div class="controls">
+        <button id="startTabBtn">Start Tab Recording</button>
+        <button id="startMicBtn">Start Microphone Recording</button>
+        <button id="stopBtn" disabled>Stop Recording</button>
+        <button id="exportBtn">Export Transcript</button>
+    </div>
+    <div id="status">Idle</div>
+    <div id="timer"></div>
+    <div id="transcript" contenteditable="true"></div>
+</div>
+<script src="sidepanel.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "chrome-realtime-transcriber",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chrome extension to capture tab audio and transcribe via Gemini.",
+  "scripts": {
+    "lint": "eslint extension --ext .js"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "prettier": "^3.3.0"
+  }
+}
