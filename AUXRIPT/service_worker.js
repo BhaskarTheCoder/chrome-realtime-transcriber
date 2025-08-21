@@ -1,22 +1,101 @@
-chrome.runtime.onInstalled.addListener(() => {
-  console.log("Extension Installed");
-});
+// service_worker.js
+// Orchestrates the offscreen document and settings storage, and routes messages.
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === "startCapture") {
-    startTabCapture(sendResponse);
-    return true; // keeps the message channel open for async response
+const DEFAULT_SETTINGS = {
+  provider: 'gemini',
+  geminiApiKey: 'AIzaSyBGHcSU4GHV8Jxt0YrTUTy7lEwwlb4W04w', // WARNING: For local testing only. Do not ship with secrets hardcoded.
+  openaiApiKey: '',
+  deepgramApiKey: '',
+  fireworksApiKey: '',
+  geminiModel: 'gemini-1.5-flash',
+  chunkSec: 30,
+  overlapSec: 3,
+  fallbackEnabled: true,
+};
+
+async function ensureDefaults() {
+  const existing = await chrome.storage.local.get(Object.keys(DEFAULT_SETTINGS));
+  const toSet = {};
+  for (const [k, v] of Object.entries(DEFAULT_SETTINGS)) {
+    if (existing[k] === undefined) toSet[k] = v;
   }
-});
-
-async function startTabCapture(sendResponse) {
-  try {
-    const stream = await chrome.tabCapture.capture({ audio: true, video: false });
-    console.log("Tab audio captured:", stream);
-    sendResponse({ success: true });
-    // You can now send `stream` to your transcription API
-  } catch (error) {
-    console.error("Error capturing tab audio:", error);
-    sendResponse({ success: false, error: error.message });
+  if (Object.keys(toSet).length) {
+    await chrome.storage.local.set(toSet);
   }
 }
+
+async function ensureOffscreen() {
+  const hasDoc = await chrome.offscreen.hasDocument();
+  if (!hasDoc) {
+    await chrome.offscreen.createDocument({
+      url: 'offscreen/offscreen.html',
+      reasons: ['AUDIO_PLAYBACK'],
+      justification: 'Capture and process audio with AudioWorklet for STT.'
+    });
+  }
+}
+
+chrome.runtime.onInstalled.addListener(async () => {
+  await ensureDefaults();
+  console.log('Audio Transcription extension installed.');
+});
+
+chrome.action.onClicked.addListener(async (tab) => {
+  try {
+    await chrome.sidePanel.open({ windowId: tab.windowId });
+  } catch (e) {
+    console.warn('Side panel open failed:', e);
+  }
+});
+
+// Message router
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  (async () => {
+    try {
+      switch (msg?.type) {
+        case 'OFFSCREEN_START': {
+          await ensureOffscreen();
+          await chrome.runtime.sendMessage({ type: 'OFFSCREEN_START', payload: msg.payload });
+          sendResponse({ ok: true });
+          break;
+        }
+        case 'OFFSCREEN_STOP': {
+          await chrome.runtime.sendMessage({ type: 'OFFSCREEN_STOP' });
+          sendResponse({ ok: true });
+          break;
+        }
+        case 'OFFSCREEN_PAUSE': {
+          await chrome.runtime.sendMessage({ type: 'OFFSCREEN_PAUSE', payload: { paused: msg.payload?.paused } });
+          sendResponse({ ok: true });
+          break;
+        }
+        case 'GET_SETTINGS': {
+          const data = await chrome.storage.local.get(Object.keys(DEFAULT_SETTINGS));
+          sendResponse({ ok: true, data });
+          break;
+        }
+        case 'SAVE_SETTINGS': {
+          await chrome.storage.local.set(msg.payload || {});
+          sendResponse({ ok: true });
+          break;
+        }
+        case 'LIVE_TEXT':
+        case 'CHANNELS':
+        case 'QUEUE_STATUS':
+        case 'STATUS': {
+          // Broadcast to all extension contexts (sidepanel listens)
+          chrome.runtime.sendMessage(msg);
+          sendResponse?.({ ok: true });
+          break;
+        }
+        default:
+          sendResponse?.({ ok: true });
+          break;
+      }
+    } catch (e) {
+      console.error('Service worker error:', e);
+      sendResponse?.({ ok: false, error: e?.message || String(e) });
+    }
+  })();
+  return true; // async
+});

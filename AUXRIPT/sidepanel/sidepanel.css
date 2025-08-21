@@ -2,17 +2,33 @@ body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 10px;
-  width: 350px;
+  width: 400px;
+  background: #f8f9fa;
 }
 
-h2 {
-  text-align: center;
+h2 { text-align: center; margin-bottom: 10px; }
+
+.container { display: flex; flex-direction: column; }
+
+.source-select {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 10px 0;
+  padding: 8px;
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  gap: 10px;
 }
+
+.tab-select { display: flex; align-items: center; gap: 6px; }
 
 .controls, .export {
   display: flex;
   justify-content: space-between;
   margin: 10px 0;
+  gap: 10px;
 }
 
 button {
@@ -22,28 +38,56 @@ button {
   color: white;
   border-radius: 5px;
   cursor: pointer;
+  font-size: 14px;
+  flex: 1;
 }
 
-button:disabled {
-  background-color: grey;
-  cursor: not-allowed;
-}
+button:disabled { background-color: #888; cursor: not-allowed; }
 
 .status {
   display: flex;
   flex-direction: column;
   font-size: 12px;
-  margin-bottom: 10px;
+  margin: 10px 0;
+  gap: 4px;
 }
 
 .transcript-container {
   border: 1px solid #ccc;
   padding: 10px;
-  height: 200px;
+  height: 260px;
   overflow-y: auto;
-  background-color: #f9f9f9;
+  background-color: #fff;
+  border-radius: 5px;
+  font-size: 14px;
+  line-height: 1.35;
 }
 
-#transcript p {
-  margin: 0 0 5px 0;
+.transcript-line { margin: 0 0 6px 0; }
+
+.channels { font-size: 12px; margin-top: 8px; }
+
+.settings {
+  margin-top: 10px;
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.settings .row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0;
+}
+
+.settings input[type="password"],
+.settings input[type="text"],
+.settings input[type="number"],
+.settings select {
+  flex: 1;
+  padding: 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
 }
