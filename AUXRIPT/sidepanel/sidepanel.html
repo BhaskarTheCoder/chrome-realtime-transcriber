@@ -1,88 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>Real-Time Transcription</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="sidepanel.css" />
 </head>
+
 <body>
   <div class="container">
-    <h2>🎙️ Real-Time Transcription</h2>
+    <h2>🎙️ Audio Transcriber</h2>
+
+    <!-- Microphone Permission Banner -->
+    <div class="permission-banner" id="permissionBanner" style="display: none;">
+      <h3>🎤 Microphone Access Needed</h3>
+      <p>To use the microphone feature, please grant permission when prompted. This allows the extension to capture and
+        transcribe your voice.</p>
+      <button id="requestMicBtn">Grant Microphone Access</button>
+    </div>
 
     <!-- Sources -->
     <div class="source-select">
       <label><input type="checkbox" id="micCheckbox" /> Microphone</label>
-      </div>
     </div>
-    <div class="source-select">
-      <div class="tab-select">
-        <label for="tabList">Select Tab:</label>
-        <select id="tabList" aria-label="Select tab">
-          <option value="current">🔊 Current Tab</option>
-        </select>
-      </div>
+  </div>
+  <div class="source-select">
+    <div class="tab-select">
+      <label for="tabList">Select Tab:</label>
+      <select id="tabList" aria-label="Select tab">
+        <option value="current">🔊 Current Tab</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button id="startBtn" aria-label="Start recording">Start</button>
+    <button id="pauseBtn" disabled aria-label="Pause recording">Pause</button>
+    <button id="stopBtn" disabled aria-label="Stop recording">Stop</button>
+  </div>
+
+  <!-- Status & Timer -->
+  <div class="status">
+    <span id="recordingStatus">Status: Stopped</span>
+    <span id="connectionStatus">Connection: Offline</span>
+    <span id="errorStatus" role="alert" aria-live="polite"></span>
+    <span id="timer">00:00</span>
+  </div>
+
+  <!-- Transcript -->
+  <div class="transcript-container" id="transcript" aria-live="polite" aria-label="Transcript log"></div>
+
+  <!-- Channels -->
+  <div class="channels">
+    <span>🎧 Sources Captured:</span>
+    <ul id="channelList"></ul>
+  </div>
+
+  <!-- Export -->
+  <div class="export">
+    <button id="copyBtn">📋 Copy</button>
+    <button id="downloadTxtBtn">⬇️ Download .txt</button>
+    <button id="downloadJsonBtn">⬇️ Download .json</button>
+  </div>
+
+  <!-- Settings -->
+  <details class="settings">
+    <summary>⚙️ Settings</summary>
+    <div class="row">
+      <label for="providerSelect">Provider:</label>
+      <select id="providerSelect">
+        <option value="gemini">Google Gemini Flash</option>
+        <option value="openai">OpenAI Whisper</option>
+        <option value="deepgram">Deepgram Nova</option>
+        <option value="fireworks">Fireworks (Whisper)</option>
+      </select>
+    </div>
+    <div class="row"><label>Gemini Model:</label> <input type="text" id="geminiModel" placeholder="gemini-1.5-flash" />
+    </div>
+    <div class="row"><label>Gemini API Key:</label> <input type="password" id="geminiKey" placeholder="AIza..." /></div>
+    <div class="row"><label>OpenAI API Key:</label> <input type="password" id="openaiKey" placeholder="sk-..." /></div>
+    <div class="row"><label>Deepgram API Key:</label> <input type="password" id="deepgramKey" placeholder="dg_..." />
+    </div>
+    <div class="row"><label>Fireworks API Key:</label> <input type="password" id="fireworksKey" placeholder="FW..." />
     </div>
 
-    <!-- Controls -->
-    <div class="controls">
-      <button id="startBtn" aria-label="Start recording">Start</button>
-      <button id="pauseBtn" disabled aria-label="Pause recording">Pause</button>
-      <button id="stopBtn" disabled aria-label="Stop recording">Stop</button>
+    <div class="row">
+      <label>Chunk (sec):</label> <input type="number" id="chunkSec" min="5" max="120" value="30" />
+      <label>Overlap (sec):</label> <input type="number" id="overlapSec" min="0" max="10" value="3" />
     </div>
-
-    <!-- Status & Timer -->
-    <div class="status">
-      <span id="recordingStatus">Status: Stopped</span>
-      <span id="connectionStatus">Connection: Offline</span>
-      <span id="errorStatus" role="alert" aria-live="polite"></span>
-      <span id="timer">00:00</span>
+    <div class="row">
+      <label><input type="checkbox" id="fallbackEnabled" checked /> Enable provider fallback</label>
     </div>
-
-    <!-- Transcript -->
-    <div class="transcript-container" id="transcript" aria-live="polite" aria-label="Transcript log"></div>
-
-    <!-- Channels -->
-    <div class="channels">
-      <span>🎧 Sources Captured:</span>
-      <ul id="channelList"></ul>
-    </div>
-
-    <!-- Export -->
-    <div class="export">
-      <button id="copyBtn">📋 Copy</button>
-      <button id="downloadTxtBtn">⬇️ Download .txt</button>
-      <button id="downloadJsonBtn">⬇️ Download .json</button>
-    </div>
-
-    <!-- Settings -->
-    <details class="settings">
-      <summary>⚙️ Settings</summary>
-      <div class="row">
-        <label for="providerSelect">Provider:</label>
-        <select id="providerSelect">
-          <option value="gemini">Google Gemini Flash</option>
-          <option value="openai">OpenAI Whisper</option>
-          <option value="deepgram">Deepgram Nova</option>
-          <option value="fireworks">Fireworks (Whisper)</option>
-        </select>
-      </div>
-      <div class="row"><label>Gemini Model:</label> <input type="text" id="geminiModel" placeholder="gemini-1.5-flash" /></div>
-      <div class="row"><label>Gemini API Key:</label> <input type="password" id="geminiKey" placeholder="AIza..." /></div>
-      <div class="row"><label>OpenAI API Key:</label> <input type="password" id="openaiKey" placeholder="sk-..." /></div>
-      <div class="row"><label>Deepgram API Key:</label> <input type="password" id="deepgramKey" placeholder="dg_..." /></div>
-      <div class="row"><label>Fireworks API Key:</label> <input type="password" id="fireworksKey" placeholder="FW..." /></div>
-
-      <div class="row">
-        <label>Chunk (sec):</label> <input type="number" id="chunkSec" min="5" max="120" value="30" />
-        <label>Overlap (sec):</label> <input type="number" id="overlapSec" min="0" max="10" value="3" />
-      </div>
-      <div class="row">
-        <label><input type="checkbox" id="fallbackEnabled" checked /> Enable provider fallback</label>
-      </div>
-      <button id="saveSettingsBtn">Save Settings</button>
-    </details>
+    <button id="saveSettingsBtn">Save Settings</button>
+  </details>
   </div>
 
   <script src="sidepanel.js"></script>
 </body>
+
 </html>

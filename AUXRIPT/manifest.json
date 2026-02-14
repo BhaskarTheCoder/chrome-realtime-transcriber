@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Audio Transcription",
-  "description": "Capture tab (and optional mic) audio, chunk every 30s with 3s overlap, and transcribe it in near real-time.",
-  "version": "1.1.0",
+  "name": "Real-Time Audio Transcriber",
+  "description": "Capture tab and microphone audio, transcribe in real-time using AI. Supports Gemini, OpenAI Whisper, Deepgram, and Fireworks.",
+  "version": "2.0.0",
   "background": {
     "service_worker": "service_worker.js"
   },
@@ -22,18 +22,28 @@
     "https://api.fireworks.ai/*"
   ],
   "icons": {
+    "16": "16.png",
+    "48": "94.png",
     "128": "94.png"
   },
   "side_panel": {
     "default_path": "sidepanel/sidepanel.html"
   },
   "action": {
-    "default_icon": "94.png"
+    "default_icon": {
+      "16": "16.png",
+      "48": "94.png",
+      "128": "94.png"
+    }
   },
   "web_accessible_resources": [
     {
-      "resources": ["pcm-worklet.js"],
-      "matches": ["<all_urls>"]
+      "resources": [
+        "pcm-worklet.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ]
 }

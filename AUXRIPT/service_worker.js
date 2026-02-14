@@ -3,7 +3,7 @@
 
 const DEFAULT_SETTINGS = {
   provider: 'gemini',
-  geminiApiKey: 'AIzaSyBGHcSU4GHV8Jxt0YrTUTy7lEwwlb4W04w', // WARNING: For local testing only. Do not ship with secrets hardcoded.
+  geminiApiKey: '', // Users must provide their own API key via settings
   openaiApiKey: '',
   deepgramApiKey: '',
   fireworksApiKey: '',
@@ -28,7 +28,7 @@ async function ensureOffscreen() {
   const hasDoc = await chrome.offscreen.hasDocument();
   if (!hasDoc) {
     await chrome.offscreen.createDocument({
-      url: 'offscreen/offscreen.html',
+      url: 'offscreen.html',
       reasons: ['AUDIO_PLAYBACK'],
       justification: 'Capture and process audio with AudioWorklet for STT.'
     });
@@ -77,6 +77,16 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         case 'SAVE_SETTINGS': {
           await chrome.storage.local.set(msg.payload || {});
           sendResponse({ ok: true });
+          break;
+        }
+        case 'SAVE_QUEUE': {
+          await chrome.storage.local.set({ sttQueue: msg.payload?.sttQueue || [] });
+          sendResponse({ ok: true });
+          break;
+        }
+        case 'LOAD_QUEUE': {
+          const { sttQueue } = await chrome.storage.local.get(['sttQueue']);
+          sendResponse({ ok: true, data: { sttQueue: sttQueue || [] } });
           break;
         }
         case 'LIVE_TEXT':

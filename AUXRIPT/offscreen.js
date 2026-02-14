@@ -134,13 +134,22 @@ window.addEventListener('offline', () => {
 });
 
 async function saveQueue() {
-  await chrome.storage.local.set({ sttQueue: queue });
-  chrome.runtime.sendMessage({ type: 'QUEUE_STATUS', payload: { size: queue.length } });
+  try {
+    await chrome.runtime.sendMessage({ type: 'SAVE_QUEUE', payload: { sttQueue: queue } });
+    chrome.runtime.sendMessage({ type: 'QUEUE_STATUS', payload: { size: queue.length } });
+  } catch (e) {
+    console.error('Failed to save queue:', e);
+  }
 }
 async function loadQueue() {
-  const { sttQueue } = await chrome.storage.local.get(['sttQueue']);
-  queue = Array.isArray(sttQueue) ? sttQueue : [];
-  chrome.runtime.sendMessage({ type: 'QUEUE_STATUS', payload: { size: queue.length } });
+  try {
+    const response = await chrome.runtime.sendMessage({ type: 'LOAD_QUEUE' });
+    queue = Array.isArray(response?.data?.sttQueue) ? response.data.sttQueue : [];
+    chrome.runtime.sendMessage({ type: 'QUEUE_STATUS', payload: { size: queue.length } });
+  } catch (e) {
+    console.error('Failed to load queue:', e);
+    queue = [];
+  }
 }
 
 function enqueue({ blob, channel, startSec, endSec }) {
@@ -268,12 +277,12 @@ async function startPipeline({ tabId, includeMic }) {
 async function stopPipeline() {
   try {
     for (const p of pipelines.splice(0)) {
-      try { p.workletNode?.disconnect(); } catch {}
-      try { p.sourceNode?.disconnect(); } catch {}
-      try { p.stream?.getTracks().forEach(t => t.stop()); } catch {}
+      try { p.workletNode?.disconnect(); } catch { }
+      try { p.sourceNode?.disconnect(); } catch { }
+      try { p.stream?.getTracks().forEach(t => t.stop()); } catch { }
     }
     if (ctx && ctx.state !== 'closed') await ctx.close();
-  } catch {}
+  } catch { }
   ctx = null;
   paused = false;
   chrome.runtime.sendMessage({ type: 'LIVE_TEXT', payload: { text: '⏹️ Capture stopped.', final: true } });
@@ -286,7 +295,7 @@ async function setPaused(p) {
       if (paused && ctx.state === 'running') await ctx.suspend();
       if (!paused && ctx.state === 'suspended') await ctx.resume();
     }
-  } catch {}
+  } catch { }
   chrome.runtime.sendMessage({
     type: 'LIVE_TEXT',
     payload: { text: paused ? '⏸️ Paused.' : '▶️ Resumed.', final: false }
